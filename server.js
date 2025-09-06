@@ -49,42 +49,46 @@ async function performSerpApiSearch(query) {
 }
 
 /**
- * Makes a request to the Ark API
+ * Makes a request to the Ark API with retry logic
  */
-async function makeArkApiRequest(messages) {
-    try {
-        console.log('Making Ark API request with messages:', JSON.stringify(messages, null, 2));
-        
-        const requestData = {
-            model: model,
-            messages: messages
-        };
-        
-        console.log('Request data:', JSON.stringify(requestData, null, 2));
-        
-        const response = await axios.post(`${ARK_BASE_URL}/chat/completions`, requestData, {
-            headers: {
-                'Authorization': `Bearer ${ARK_API_KEY}`,
-                'Content-Type': 'application/json'
-            }
-        });
+async function makeArkApiRequest(messages, retries = 2) {
+    for (let attempt = 1; attempt <= retries + 1; attempt++) {
+        try {
+            console.log(`Making Ark API request (attempt ${attempt}/${retries + 1})`);
+            
+            const requestData = {
+                model: model,
+                messages: messages
+            };
+            
+            const response = await axios.post(`${ARK_BASE_URL}/chat/completions`, requestData, {
+                headers: {
+                    'Authorization': `Bearer ${ARK_API_KEY}`,
+                    'Content-Type': 'application/json'
+                },
+                timeout: 60000 // 60 seconds timeout
+            });
 
-        return {
-            content: response.data.choices[0].message.content,
-            usage: response.data.usage
-        };
-    } catch (error) {
-        console.error('Ark API Error Details:');
-        console.error('Status:', error.response?.status);
-        console.error('Status Text:', error.response?.statusText);
-        console.error('Response Data:', JSON.stringify(error.response?.data, null, 2));
-        console.error('Request Config:', JSON.stringify({
-            url: error.config?.url,
-            method: error.config?.method,
-            headers: error.config?.headers,
-            data: error.config?.data
-        }, null, 2));
-        throw new Error(`Ark API request failed: ${error.message}`);
+            return {
+                content: response.data.choices[0].message.content,
+                usage: response.data.usage
+            };
+        } catch (error) {
+            console.error(`Ark API Error (attempt ${attempt}):`);
+            console.error('Status:', error.response?.status);
+            console.error('Status Text:', error.response?.statusText);
+            console.error('Error Message:', error.message);
+            
+            if (attempt === retries + 1) {
+                // Last attempt failed
+                throw new Error(`Ark API request failed after ${retries + 1} attempts: ${error.message}`);
+            }
+            
+            // Wait before retry (exponential backoff)
+            const waitTime = Math.pow(2, attempt - 1) * 1000; // 1s, 2s, 4s...
+            console.log(`Waiting ${waitTime}ms before retry...`);
+            await new Promise(resolve => setTimeout(resolve, waitTime));
+        }
     }
 }
 
@@ -92,10 +96,16 @@ async function makeArkApiRequest(messages) {
  * Analyzes the image using the provided LLM and returns a suggested resell price range.
  */
 async function analyzeImageWithLlm(imageUrl, searchResults = null) {
-    let textPrompt = "Analyze the quality of the item based on the user-provided image and the provided search results. Suggest a resell price range for the item in Thai Baht. Consider the item's condition from the image and the prices found in the search results. Provide the answer in Thai.";
+    let textPrompt = "Analyze the quality of the item based on the user-provided image. Suggest a resell price range for the item in Thai Baht. Provide the answer in Thai.";
     
-    if (searchResults) {
-        textPrompt = `Analyze the quality of the item based on the user-provided image and the following search results. Suggest a resell price range for the item in Thai Baht. Consider the item's condition from the image and the prices found in the search results. Search Results: ${JSON.stringify(searchResults)}. Provide the answer in Thai. Output: คุณภาพของอุปกรณ์ และ สรุปคำแนะนำราคามือสอง`;
+    if (searchResults && searchResults.length > 0) {
+        // Limit search results to prevent API payload size issues
+        const limitedResults = searchResults.slice(0, 3).map(result => ({
+            title: result.title?.substring(0, 100) || 'No title',
+            snippet: result.snippet?.substring(0, 200) || ''
+        }));
+        
+        textPrompt = `Analyze the quality of the item based on the user-provided image and these search results. Suggest a resell price range for the item in Thai Baht. Consider the item's condition from the image and the prices found in the search results.\n\nSearch Results: ${JSON.stringify(limitedResults)}\n\nProvide the answer in Thai. Output format: คุณภาพของอุปกรณ์ และ สรุปคำแนะนำราคามือสอง`;
     }
 
     const messages = [{

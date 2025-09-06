@@ -100,47 +100,62 @@ class PriceCheckerService {
     return 'http://localhost:3000';
   }
   
-  static const Duration timeoutDuration = Duration(seconds: 60);
+  static const Duration timeoutDuration = Duration(seconds: 120); // Increased timeout
 
-  static Future<PriceAnalysisResult> analyzePrice(String imageUrl) async {
-    try {
-      final response = await http
-          .post(
-            Uri.parse('$baseUrl/analyze-price'),
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: json.encode({
-              'imageUrl': imageUrl,
-            }),
-          )
-          .timeout(timeoutDuration);
+  static Future<PriceAnalysisResult> analyzePrice(String imageUrl, {int retries = 2}) async {
+    Exception? lastException;
+    
+    for (int attempt = 1; attempt <= retries + 1; attempt++) {
+      try {
+        print('Analyzing price (attempt $attempt/${retries + 1})');
+        
+        final response = await http
+            .post(
+              Uri.parse('$baseUrl/analyze-price'),
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: json.encode({
+                'imageUrl': imageUrl,
+              }),
+            )
+            .timeout(timeoutDuration);
 
-      if (response.statusCode == 200) {
-        final responseData = json.decode(response.body);
-        if (responseData['success'] == true) {
-          return PriceAnalysisResult.fromJson(responseData);
+        if (response.statusCode == 200) {
+          final responseData = json.decode(response.body);
+          if (responseData['success'] == true) {
+            return PriceAnalysisResult.fromJson(responseData);
+          } else {
+            throw Exception(responseData['message'] ?? 'Unknown error occurred');
+          }
+        } else if (response.statusCode == 400) {
+          final errorData = json.decode(response.body);
+          throw Exception(errorData['message'] ?? 'Invalid request');
+        } else if (response.statusCode == 500) {
+          final errorData = json.decode(response.body);
+          throw Exception(errorData['message'] ?? 'Server error');
         } else {
-          throw Exception(responseData['message'] ?? 'Unknown error occurred');
+          throw Exception('HTTP ${response.statusCode}: ${response.reasonPhrase}');
         }
-      } else if (response.statusCode == 400) {
-        final errorData = json.decode(response.body);
-        throw Exception(errorData['message'] ?? 'Invalid request');
-      } else if (response.statusCode == 500) {
-        final errorData = json.decode(response.body);
-        throw Exception(errorData['message'] ?? 'Server error');
-      } else {
-        throw Exception('HTTP ${response.statusCode}: ${response.reasonPhrase}');
-      }
-    } catch (e) {
-      if (e.toString().contains('TimeoutException')) {
-        throw Exception('การเชื่อมต่อหมดเวลา กรุณาลองใหม่อีกครั้ง');
-      } else if (e.toString().contains('SocketException')) {
-        throw Exception('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้ กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ต');
-      } else {
-        rethrow;
+      } catch (e) {
+        lastException = e is Exception ? e : Exception(e.toString());
+        
+        if (e.toString().contains('TimeoutException')) {
+          lastException = Exception('การเชื่อมต่อหมดเวลา กรุณาลองใหม่อีกครั้ง');
+        } else if (e.toString().contains('SocketException')) {
+          lastException = Exception('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้ กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ต');
+        }
+        
+        if (attempt < retries + 1) {
+          // Wait before retry
+          final waitTime = Duration(milliseconds: 1000 * attempt); // 1s, 2s, 3s...
+          print('Waiting ${waitTime.inMilliseconds}ms before retry...');
+          await Future.delayed(waitTime);
+        }
       }
     }
+    
+    throw lastException ?? Exception('Unknown error occurred');
   }
 
   static Future<Map<String, dynamic>> identifyItem(String imageUrl) async {
