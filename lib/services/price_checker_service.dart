@@ -5,15 +5,13 @@ import 'package:flutter/foundation.dart';
 
 class PriceAnalysisResult {
   final String imageUrl;
-  final String identifiedItem;
   final String searchQuery;
   final List<SearchResult> searchResults;
-  final String analysis;
+  final AnalysisData analysis;
   final TokenUsage tokenUsage;
 
   PriceAnalysisResult({
     required this.imageUrl,
-    required this.identifiedItem,
     required this.searchQuery,
     required this.searchResults,
     required this.analysis,
@@ -24,13 +22,63 @@ class PriceAnalysisResult {
     final data = json['data'] as Map<String, dynamic>;
     return PriceAnalysisResult(
       imageUrl: data['imageUrl'] ?? '',
-      identifiedItem: data['identifiedItem'] ?? '',
       searchQuery: data['searchQuery'] ?? '',
       searchResults: (data['searchResults'] as List<dynamic>? ?? [])
           .map((item) => SearchResult.fromJson(item as Map<String, dynamic>))
           .toList(),
-      analysis: data['analysis'] ?? '',
+      analysis: AnalysisData.fromJson(data['analysis'] ?? {}),
       tokenUsage: TokenUsage.fromJson(data['tokenUsage'] as Map<String, dynamic>? ?? {}),
+    );
+  }
+}
+
+class AnalysisData {
+  final String itemName;
+  final int ratingStars;
+  final int minPriceThb;
+  final int maxPriceThb;
+
+  AnalysisData({
+    required this.itemName,
+    required this.ratingStars,
+    required this.minPriceThb,
+    required this.maxPriceThb,
+  });
+
+  factory AnalysisData.fromJson(dynamic json) {
+    // Handle both Map<String, dynamic> and String types
+    Map<String, dynamic> data;
+    
+    if (json is String) {
+      // If it's a string, try to parse it as JSON
+      try {
+        data = jsonDecode(json) as Map<String, dynamic>;
+      } catch (e) {
+        // If parsing fails, use default values
+        data = {
+          'item_name': 'Unknown Item',
+          'rating_stars': 3,
+          'min_price_thb': 100,
+          'max_price_thb': 500,
+        };
+      }
+    } else if (json is Map<String, dynamic>) {
+      data = json;
+    } else {
+      // Fallback for any other type
+      data = {
+        'item_name': 'Unknown Item',
+        'rating_stars': 3,
+        'min_price_thb': 100,
+        'max_price_thb': 500,
+      };
+    }
+    
+    return AnalysisData(
+      itemName: data['item_name'] ?? 'Unknown Item',
+      ratingStars: (data['rating_stars'] ?? 3).toInt(),
+      minPriceThb: (data['min_price_thb'] ?? 100).toInt(),
+      maxPriceThb: (data['max_price_thb'] ?? 500).toInt(),
     );
   }
 }

@@ -2,21 +2,21 @@ import 'package:flutter/material.dart';
 import 'screens/home_screen.dart';
 
 void main() {
-  runApp(const SmartPriceCheckerApp());
+  runApp(const BarterGangApp());
 }
 
-class SmartPriceCheckerApp extends StatelessWidget {
-  const SmartPriceCheckerApp({super.key});
+class BarterGangApp extends StatelessWidget {
+  const BarterGangApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Smart Price Checker',
+      title: 'Barter Gang App',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.orange,
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF2196F3),
+          seedColor: const Color(0xFF8C69),
           brightness: Brightness.light,
         ),
         appBarTheme: AppBarTheme(
@@ -32,11 +32,11 @@ class SmartPriceCheckerApp extends StatelessWidget {
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF2196F3),
+            backgroundColor: const Color(0xFFFF8C69),
             foregroundColor: Colors.white,
             padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
             elevation: 8,
-            shadowColor: const Color(0xFF2196F3).withOpacity(0.3),
+            shadowColor: const Color(0xFFFF8C69).withOpacity(0.3),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
@@ -62,7 +62,7 @@ class SmartPriceCheckerApp extends StatelessWidget {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Color(0xFF2196F3), width: 2),
+            borderSide: const BorderSide(color: Color(0xFFFF8C69), width: 2),
           ),
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         ),

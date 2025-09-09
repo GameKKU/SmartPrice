@@ -7,39 +7,27 @@ class ResultsScreen extends StatelessWidget {
 
   const ResultsScreen({super.key, required this.result});
 
-  String _extractPriceRange(String analysis) {
-    // Try to extract price range from Thai text
-    final priceRegex = RegExp(r'(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)-?(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)\s*บาท');
-    final match = priceRegex.firstMatch(analysis);
-    if (match != null) {
-      return '${match.group(1)}-${match.group(2)} บาท';
+  String _getQualityText(int stars) {
+    switch (stars) {
+      case 5:
+        return 'ดีเยี่ยม (95-100% ใหม่)';
+      case 4:
+        return 'ดีมาก (85-95% ใหม่)';
+      case 3:
+        return 'ดี (70-85% ใหม่)';
+      case 2:
+        return 'ปานกลาง (50-70% ใหม่)';
+      case 1:
+        return 'พอใช้ (30-50% ใหม่)';
+      case 0:
+        return 'ต้องปรับปรุง (0-30% ใหม่)';
+      default:
+        return 'ดี (70-85% ใหม่)';
     }
-    
-    // Fallback: look for any price mention
-    final singlePriceRegex = RegExp(r'(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)\s*บาท');
-    final singleMatch = singlePriceRegex.firstMatch(analysis);
-    if (singleMatch != null) {
-      return '${singleMatch.group(1)} บาท';
-    }
-    
-    return 'ไม่สามารถระบุราคาได้';
   }
 
-  String _extractQuality(String analysis) {
-    // Try to extract quality assessment from Thai text
-    if (analysis.contains('ดีมาก')) {
-      return 'ดีมาก (90-95% ใหม่)';
-    } else if (analysis.contains('ดี')) {
-      return 'ดี (80-90% ใหม่)';
-    } else if (analysis.contains('ปานกลาง')) {
-      return 'ปานกลาง (70-80% ใหม่)';
-    } else if (analysis.contains('พอใช้')) {
-      return 'พอใช้ (60-70% ใหม่)';
-    }
-    return 'ไม่สามารถประเมินได้';
-  }
-
-  void _copyToClipboard(BuildContext context, String text) {
+  void _copyToClipboard(BuildContext context, AnalysisData analysis) {
+    final text = 'สินค้า: ${analysis.itemName}\nคุณภาพ: ${analysis.ratingStars}/5 ดาว\nราคาแนะนำ: ${analysis.minPriceThb}-${analysis.maxPriceThb} บาท';
     Clipboard.setData(ClipboardData(text: text));
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
@@ -51,8 +39,10 @@ class ResultsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final priceRange = _extractPriceRange(result.analysis);
-    final quality = _extractQuality(result.analysis);
+    // Use structured analysis data
+    final priceRange = '${result.analysis.minPriceThb}-${result.analysis.maxPriceThb} บาท';
+    final quality = '${result.analysis.ratingStars}/5 ดาว';
+    final qualityText = _getQualityText(result.analysis.ratingStars);
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -67,8 +57,8 @@ class ResultsScreen extends StatelessWidget {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                Color(0xFF2196F3),
-                Color(0xFF21CBF3),
+                Color(0xFFFF8C69),
+                Color(0xFFFFA07A),
               ],
             ),
           ),
@@ -95,8 +85,8 @@ class ResultsScreen extends StatelessWidget {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color(0xFF2196F3),
-              Color(0xFF21CBF3),
+              Color(0xFFFF8C69),
+              Color(0xFFFFA07A),
               Color(0xFFF8F9FA),
             ],
             stops: [0.0, 0.2, 1.0],
@@ -184,7 +174,7 @@ class ResultsScreen extends StatelessWidget {
                                               child: const Icon(
                                                 Icons.broken_image_outlined,
                                                 size: 48,
-                                                color: Color(0xFF2196F3),
+                                                color: Color(0xFFFF8C69),
                                               ),
                                             ),
                                             const SizedBox(height: 12),
@@ -202,58 +192,7 @@ class ResultsScreen extends StatelessWidget {
                                   ),
                                 ),
                               ),
-                              Padding(
-                                padding: const EdgeInsets.all(20.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Container(
-                                          padding: const EdgeInsets.all(8),
-                                          decoration: BoxDecoration(
-                                            color: const Color(0xFF2196F3).withOpacity(0.1),
-                                            borderRadius: BorderRadius.circular(8),
-                                          ),
-                                          child: const Icon(
-                                            Icons.inventory_2_outlined,
-                                            color: Color(0xFF2196F3),
-                                            size: 20,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 12),
-                                        Text(
-                                          'สินค้าที่ระบุ',
-                                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                            fontWeight: FontWeight.bold,
-                                            color: const Color(0xFF2196F3),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 12),
-                                    Container(
-                                      width: double.infinity,
-                                      padding: const EdgeInsets.all(16),
-                                      decoration: BoxDecoration(
-                                        color: Colors.grey[50],
-                                        borderRadius: BorderRadius.circular(12),
-                                        border: Border.all(
-                                          color: Colors.grey[200]!,
-                                          width: 1,
-                                        ),
-                                      ),
-                                      child: Text(
-                                        result.identifiedItem,
-                                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                          fontWeight: FontWeight.w500,
-                                          color: Colors.grey[800],
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
+
                             ],
                           ),
                         ),
@@ -264,7 +203,89 @@ class ResultsScreen extends StatelessWidget {
                 
                 const SizedBox(height: 24),
                 
-                // Enhanced Price Summary Cards
+                // Item Name Card
+                TweenAnimationBuilder<double>(
+                  duration: const Duration(milliseconds: 900),
+                  tween: Tween(begin: 0.0, end: 1.0),
+                  builder: (context, value, child) {
+                    return Opacity(
+                      opacity: value,
+                      child: Transform.translate(
+                        offset: Offset(0, 35 * (1 - value)),
+                        child: Container(
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(16),
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                Colors.blue[400]!,
+                                Colors.blue[500]!,
+                              ],
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 15,
+                                spreadRadius: 0,
+                                offset: const Offset(0, 8),
+                              ),
+                            ],
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(20.0),
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.2),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.inventory_2,
+                                    color: Colors.white,
+                                    size: 24,
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                        'สินค้าที่ตรวจพบ',
+                                        style: TextStyle(
+                                          color: Colors.white70,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        result.analysis.itemName,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                
+                const SizedBox(height: 20),
+                
+                // Price and Quality Cards
                 TweenAnimationBuilder<double>(
                   duration: const Duration(milliseconds: 1000),
                   tween: Tween(begin: 0.0, end: 1.0),
@@ -275,21 +296,15 @@ class ResultsScreen extends StatelessWidget {
                         offset: Offset(0, 40 * (1 - value)),
                         child: Row(
                           children: [
+                            // Price Range Card
                             Expanded(
                               child: Container(
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(20),
-                                  gradient: const LinearGradient(
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                    colors: [
-                                      Color(0xFF4CAF50),
-                                      Color(0xFF66BB6A),
-                                    ],
-                                  ),
+                                  color: Colors.green,
                                   boxShadow: [
                                     BoxShadow(
-                                      color: const Color(0xFF4CAF50).withOpacity(0.3),
+                                      color: Colors.black.withOpacity(0.1),
                                       blurRadius: 15,
                                       spreadRadius: 0,
                                       offset: const Offset(0, 8),
@@ -307,7 +322,7 @@ class ResultsScreen extends StatelessWidget {
                                           shape: BoxShape.circle,
                                         ),
                                         child: const Icon(
-                                          Icons.monetization_on,
+                                          Icons.attach_money,
                                           color: Colors.white,
                                           size: 28,
                                         ),
@@ -337,21 +352,15 @@ class ResultsScreen extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(width: 16),
+                            // Quality Rating Card
                             Expanded(
                               child: Container(
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(20),
-                                  gradient: const LinearGradient(
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                    colors: [
-                                      Color(0xFF2196F3),
-                                      Color(0xFF42A5F5),
-                                    ],
-                                  ),
+                                  color: const Color(0xFFFF8C69),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: const Color(0xFF2196F3).withOpacity(0.3),
+                                      color: Colors.black.withOpacity(0.1),
                                       blurRadius: 15,
                                       spreadRadius: 0,
                                       offset: const Offset(0, 8),
@@ -369,7 +378,7 @@ class ResultsScreen extends StatelessWidget {
                                           shape: BoxShape.circle,
                                         ),
                                         child: const Icon(
-                                          Icons.verified,
+                                          Icons.star,
                                           color: Colors.white,
                                           size: 28,
                                         ),
@@ -384,15 +393,25 @@ class ResultsScreen extends StatelessWidget {
                                         ),
                                       ),
                                       const SizedBox(height: 8),
-                                      Text(
-                                        quality,
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 14,
-                                        ),
-                                        textAlign: TextAlign.center,
-                                      ),
+                                      Row(
+                                         mainAxisAlignment: MainAxisAlignment.center,
+                                         children: List.generate(5, (index) {
+                                           return Icon(
+                                             index < result.analysis.ratingStars
+                                                 ? Icons.star
+                                                 : Icons.star_border,
+                                             color: Colors.white,
+                                             size: 16,
+                                           );
+                                         }),
+                                       ),
+                                       Text(
+                                         qualityText,
+                                         style: const TextStyle(
+                                           fontSize: 12,
+                                           color: Colors.white70,
+                                         ),
+                                       ),
                                     ],
                                   ),
                                 ),
@@ -446,12 +465,12 @@ class ResultsScreen extends StatelessWidget {
                                     Container(
                                       padding: const EdgeInsets.all(12),
                                       decoration: BoxDecoration(
-                                        color: const Color(0xFF2196F3).withOpacity(0.1),
+                                        color: const Color(0xFFFF8C69).withOpacity(0.1),
                                         shape: BoxShape.circle,
                                       ),
                                       child: const Icon(
                                         Icons.analytics,
-                                        color: Color(0xFF2196F3),
+                                        color: Color(0xFFFF8C69),
                                         size: 24,
                                       ),
                                     ),
@@ -461,19 +480,19 @@ class ResultsScreen extends StatelessWidget {
                                         'การวิเคราะห์แบบละเอียด',
                                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
                                           fontWeight: FontWeight.bold,
-                                          color: const Color(0xFF2196F3),
+                                          color: const Color(0xFFFF8C69),
                                         ),
                                       ),
                                     ),
                                     Container(
                                       decoration: BoxDecoration(
-                                        color: const Color(0xFF2196F3).withOpacity(0.1),
+                                        color: const Color(0xFFFF8C69).withOpacity(0.1),
                                         borderRadius: BorderRadius.circular(8),
                                       ),
                                       child: IconButton(
                                         icon: const Icon(
                                           Icons.copy,
-                                          color: Color(0xFF2196F3),
+                                          color: Color(0xFFFF8C69),
                                         ),
                                         onPressed: () => _copyToClipboard(context, result.analysis),
                                         tooltip: 'คัดลอกข้อความ',
@@ -494,10 +513,11 @@ class ResultsScreen extends StatelessWidget {
                                     ),
                                   ),
                                   child: Text(
-                                    result.analysis,
-                                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                      height: 1.6,
-                                      color: Colors.grey[800],
+                                    'สินค้า: ${result.analysis.itemName}\nคุณภาพสินค้า: ${result.analysis.ratingStars}/5 ดาว\nราคาแนะนำ: ${result.analysis.minPriceThb}-${result.analysis.maxPriceThb} บาท\n\nการวิเคราะห์นี้อิงจากคุณภาพที่มองเห็นจากภาพและข้อมูลราคาตลาด',
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.black87,
+                                      height: 1.5,
                                     ),
                                   ),
                                 ),
@@ -529,7 +549,7 @@ class ResultsScreen extends StatelessWidget {
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(16),
                                   border: Border.all(
-                                    color: const Color(0xFF2196F3),
+                                    color: const Color(0xFFFF8C69),
                                     width: 2,
                                   ),
                                 ),
@@ -545,13 +565,13 @@ class ResultsScreen extends StatelessWidget {
                                       children: [
                                         Icon(
                                           Icons.arrow_back,
-                                          color: Color(0xFF2196F3),
+                                          color: Color(0xFFFF8C69),
                                         ),
                                         SizedBox(width: 8),
                                         Text(
                                           'วิเคราะห์ใหม่',
                                           style: TextStyle(
-                                            color: Color(0xFF2196F3),
+                                            color: Color(0xFFFF8C69),
                                             fontWeight: FontWeight.w600,
                                             fontSize: 16,
                                           ),
@@ -572,13 +592,13 @@ class ResultsScreen extends StatelessWidget {
                                     begin: Alignment.topLeft,
                                     end: Alignment.bottomRight,
                                     colors: [
-                                      Color(0xFF2196F3),
-                                      Color(0xFF21CBF3),
+                                      Color(0xFFFF8C69),
+                                      Color(0xFFFFA07A),
                                     ],
                                   ),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: const Color(0xFF2196F3).withOpacity(0.3),
+                                      color: const Color(0xFFFF8C69).withOpacity(0.3),
                                       blurRadius: 15,
                                       spreadRadius: 0,
                                       offset: const Offset(0, 8),
@@ -590,12 +610,7 @@ class ResultsScreen extends StatelessWidget {
                                   child: InkWell(
                                     borderRadius: BorderRadius.circular(16),
                                     onTap: () {
-                                      _copyToClipboard(context, 
-                                        'สินค้า: ${result.identifiedItem}\n'
-                                        'คุณภาพ: $quality\n'
-                                        'ราคาแนะนำ: $priceRange\n\n'
-                                        '${result.analysis}'
-                                      );
+                                      _copyToClipboard(context, result.analysis);
                                     },
                                     child: Row(
                                       mainAxisAlignment: MainAxisAlignment.center,

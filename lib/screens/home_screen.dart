@@ -112,7 +112,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text('Smart Price Checker'),
+        title: const Text('Barter Gang App'),
         centerTitle: true,
         flexibleSpace: Container(
           decoration: const BoxDecoration(
@@ -120,8 +120,8 @@ class _HomeScreenState extends State<HomeScreen> {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                Color(0xFF2196F3),
-                Color(0xFF21CBF3),
+                Color(0xFFFF8C69),
+                Color(0xFFFFA07A),
               ],
             ),
           ),
@@ -133,8 +133,8 @@ class _HomeScreenState extends State<HomeScreen> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color(0xFF2196F3),
-              Color(0xFF21CBF3),
+              Color(0xFFFF8C69),
+              Color(0xFFFFA07A),
               Color(0xFFF3F4F6),
             ],
             stops: [0.0, 0.3, 1.0],
@@ -173,7 +173,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: const Icon(
                             Icons.camera_enhance,
                             size: 60,
-                            color: Color(0xFF2196F3),
+                            color: Color(0xFFFF8C69),
                           ),
                         ),
                       );
@@ -273,12 +273,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                   Container(
                                     padding: const EdgeInsets.all(8),
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFF2196F3).withOpacity(0.1),
+                                      color: const Color(0xFFFF8C69).withOpacity(0.1),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: const Icon(
                                       Icons.image,
-                                      color: Color(0xFF2196F3),
+                                      color: Color(0xFFFF8C69),
                                       size: 20,
                                     ),
                                   ),
@@ -287,7 +287,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     'URL รูปภาพสินค้า',
                                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                                       fontWeight: FontWeight.bold,
-                                      color: const Color(0xFF2196F3),
+                                      color: const Color(0xFFFF8C69),
                                     ),
                                   ),
                                 ],
@@ -301,7 +301,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   hintStyle: TextStyle(color: Colors.grey[500]),
                                   prefixIcon: const Icon(
                                     Icons.link,
-                                    color: Color(0xFF2196F3),
+                                    color: Color(0xFFFF8C69),
                                   ),
                                   filled: true,
                                   fillColor: Colors.grey[50],
@@ -325,10 +325,10 @@ class _HomeScreenState extends State<HomeScreen> {
                               Container(
                                 padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
-                                  color: Colors.blue[50],
+                                  color: const Color(0xFFFFB347).withOpacity(0.2),
                                   borderRadius: BorderRadius.circular(8),
                                   border: Border.all(
-                                    color: Colors.blue[200]!,
+                                    color: const Color(0xFFFF8C69).withOpacity(0.5),
                                     width: 1,
                                   ),
                                 ),
@@ -336,7 +336,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   children: [
                                     Icon(
                                       Icons.info_outline,
-                                      color: Colors.blue[600],
+                                      color: const Color(0xFFFF8C69),
                                       size: 16,
                                     ),
                                     const SizedBox(width: 8),
@@ -344,7 +344,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       child: Text(
                                         'ใส่ URL ของรูปภาพสินค้าที่ต้องการตรวจสอบราคา',
                                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                          color: Colors.blue[700],
+                                          color: const Color(0xFFFF6347),
                                         ),
                                       ),
                                     ),
@@ -475,13 +475,13 @@ class _HomeScreenState extends State<HomeScreen> {
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                             colors: [
-                              Color(0xFF2196F3),
-                              Color(0xFF21CBF3),
+                              Color(0xFFFF8C69),
+                              Color(0xFFFFA07A),
                             ],
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFF2196F3).withOpacity(0.4),
+                              color: const Color(0xFFFF8C69).withOpacity(0.4),
                               blurRadius: 20,
                               spreadRadius: 0,
                               offset: const Offset(0, 8),
@@ -591,12 +591,12 @@ class _HomeScreenState extends State<HomeScreen> {
                               Container(
                                 padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFF2196F3).withOpacity(0.1),
+                                  color: const Color(0xFFFF8C69).withOpacity(0.1),
                                   shape: BoxShape.circle,
                                 ),
                                 child: const Icon(
                                   Icons.lightbulb_outline,
-                                  color: Color(0xFF2196F3),
+                                  color: Color(0xFFFF8C69),
                                   size: 24,
                                 ),
                               ),
@@ -605,7 +605,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 'วิธีการใช้งาน',
                                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                                   fontWeight: FontWeight.bold,
-                                  color: const Color(0xFF2196F3),
+                                  color: const Color(0xFFFF8C69),
                                 ),
                               ),
                               const SizedBox(height: 16),
@@ -624,7 +624,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       height: 6,
                                       margin: const EdgeInsets.only(top: 6, right: 12),
                                       decoration: const BoxDecoration(
-                                        color: Color(0xFF2196F3),
+                                        color: Color(0xFFFF8C69),
                                         shape: BoxShape.circle,
                                       ),
                                     ),

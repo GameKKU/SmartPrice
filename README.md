@@ -1,4 +1,4 @@
-# Smart Price Checker App
+# Barter Gang App
 
 A Flutter mobile application that analyzes product images and provides secondhand price estimates using AI-powered image recognition and market research.
 
@@ -138,7 +138,7 @@ flutter run
 
 **Server Terminal:**
 ```
-Smart Price Checker API server running on port 3000
+Barter Gang API server running on port 3000
 Health check: http://localhost:3000/health
 Main endpoint: POST http://localhost:3000/analyze-price
 ```
