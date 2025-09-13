@@ -242,6 +242,52 @@ class PriceCheckerService {
     }
   }
 
+  static Future<Map<String, dynamic>> notifyStaff({
+    required String itemName,
+    required double userDesiredPrice,
+    required int ratingStars,
+    required int minPriceThb,
+    required int maxPriceThb,
+    required String imageUrl,
+    required String userAction,
+  }) async {
+    try {
+      final response = await http
+          .post(
+            Uri.parse('$baseUrl/notify-staff'),
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: json.encode({
+              'itemName': itemName,
+              'userDesiredPrice': userDesiredPrice,
+              'ratingStars': ratingStars,
+              'minPriceThb': minPriceThb,
+              'maxPriceThb': maxPriceThb,
+              'imageUrl': imageUrl,
+              'userAction': userAction,
+            }),
+          )
+          .timeout(timeoutDuration);
+
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+        return responseData;
+      } else {
+        final errorData = json.decode(response.body);
+        throw Exception(errorData['message'] ?? 'Failed to notify staff');
+      }
+    } catch (e) {
+      if (e.toString().contains('TimeoutException')) {
+        throw Exception('การเชื่อมต่อหมดเวลา กรุณาลองใหม่อีกครั้ง');
+      } else if (e.toString().contains('SocketException')) {
+        throw Exception('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้ กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ต');
+      } else {
+        rethrow;
+      }
+    }
+  }
+
   static Future<bool> checkServerHealth() async {
     try {
       print('Checking server health at: $baseUrl/health');

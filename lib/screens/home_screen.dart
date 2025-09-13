@@ -11,6 +11,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _urlController = TextEditingController();
+  final TextEditingController _priceController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
   bool _serverHealthy = false;
@@ -56,6 +57,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void dispose() {
     _urlController.dispose();
+    _priceController.dispose();
     super.dispose();
   }
 
@@ -79,12 +81,16 @@ class _HomeScreenState extends State<HomeScreen> {
 
     try {
       final result = await PriceCheckerService.analyzePrice(_urlController.text.trim());
+      final userPrice = double.parse(_priceController.text.trim());
       
       if (mounted) {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => ResultsScreen(result: result),
+            builder: (context) => ResultsScreen(
+              result: result,
+              userDesiredPrice: userPrice,
+            ),
           ),
         );
       }
@@ -343,6 +349,97 @@ class _HomeScreenState extends State<HomeScreen> {
                                     Expanded(
                                       child: Text(
                                         'ใส่ URL ของรูปภาพสินค้าที่ต้องการตรวจสอบราคา',
+                                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                          color: const Color(0xFFFF6347),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              
+                              const SizedBox(height: 20),
+                              
+                              // Price Input Field
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFFF8C69).withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: const Icon(
+                                      Icons.attach_money,
+                                      color: Color(0xFFFF8C69),
+                                      size: 20,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Text(
+                                    'ราคาที่ต้องการขาย',
+                                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      color: const Color(0xFFFF8C69),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+                              
+                              TextFormField(
+                                controller: _priceController,
+                                decoration: InputDecoration(
+                                  hintText: 'เช่น 15000',
+                                  hintStyle: TextStyle(color: Colors.grey[500]),
+                                  prefixIcon: const Icon(
+                                    Icons.currency_exchange,
+                                    color: Color(0xFFFF8C69),
+                                  ),
+                                  suffixText: 'บาท',
+                                  suffixStyle: TextStyle(
+                                    color: const Color(0xFFFF8C69),
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                  filled: true,
+                                  fillColor: Colors.grey[50],
+                                ),
+                                keyboardType: TextInputType.number,
+                                validator: (value) {
+                                  if (value == null || value.trim().isEmpty) {
+                                    return 'กรุณาใส่ราคาที่ต้องการขาย';
+                                  }
+                                  final price = double.tryParse(value.trim());
+                                  if (price == null || price <= 0) {
+                                    return 'กรุณาใส่ราคาที่ถูกต้อง (ตัวเลขเท่านั้น)';
+                                  }
+                                  return null;
+                                },
+                              ),
+                              
+                              const SizedBox(height: 16),
+                              
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFFB347).withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: const Color(0xFFFF8C69).withOpacity(0.5),
+                                    width: 1,
+                                  ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      Icons.info_outline,
+                                      color: const Color(0xFFFF8C69),
+                                      size: 16,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        'ระบุราคาที่คุณต้องการขายสินค้าชิ้นนี้ เพื่อเปรียบเทียบกับราคาแนะนำ',
                                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                           color: const Color(0xFFFF6347),
                                         ),

@@ -277,6 +277,93 @@ app.post('/identify-item', async (req, res) => {
     }
 });
 
+/**
+ * Endpoint to send notification to staff when user approves selling
+ */
+app.post('/notify-staff', async (req, res) => {
+    try {
+        const { 
+            itemName, 
+            userDesiredPrice, 
+            ratingStars, 
+            minPriceThb, 
+            maxPriceThb, 
+            imageUrl, 
+            userAction 
+        } = req.body;
+
+        // Validate required fields
+        if (!itemName || !userDesiredPrice || !imageUrl || !userAction) {
+            return res.status(400).json({
+                error: 'Missing required fields',
+                message: 'itemName, userDesiredPrice, imageUrl, and userAction are required'
+            });
+        }
+
+        // Create notification data
+        const notificationData = {
+            timestamp: new Date().toISOString(),
+            itemDetails: {
+                name: itemName,
+                imageUrl: imageUrl,
+                qualityRating: ratingStars,
+                aiRecommendedPriceRange: {
+                    min: minPriceThb,
+                    max: maxPriceThb
+                }
+            },
+            userRequest: {
+                desiredPrice: userDesiredPrice,
+                action: userAction, // 'approve_sell' or 'acknowledge_limit'
+                priceComparison: {
+                    isInRange: userDesiredPrice >= minPriceThb && userDesiredPrice <= maxPriceThb,
+                    isTooHigh: userDesiredPrice > maxPriceThb,
+                    difference: userDesiredPrice - maxPriceThb
+                }
+            },
+            status: 'pending_staff_review'
+        };
+
+        // Log the notification (in a real app, this would be saved to database)
+        console.log('=== STAFF NOTIFICATION ===');
+        console.log('Timestamp:', notificationData.timestamp);
+        console.log('Item:', notificationData.itemDetails.name);
+        console.log('User Desired Price:', notificationData.userRequest.desiredPrice, 'THB');
+        console.log('AI Recommended Range:', notificationData.itemDetails.aiRecommendedPriceRange.min, '-', notificationData.itemDetails.aiRecommendedPriceRange.max, 'THB');
+        console.log('User Action:', notificationData.userRequest.action);
+        console.log('Price Analysis:', notificationData.userRequest.priceComparison);
+        console.log('Image URL:', notificationData.itemDetails.imageUrl);
+        console.log('========================');
+
+        // TODO: In a real implementation, you would:
+        // 1. Save to database
+        // 2. Send email/SMS to staff
+        // 3. Create dashboard notification
+        // 4. Integrate with CRM system
+
+        // Simulate processing time
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        res.json({
+            success: true,
+            message: 'Staff notification sent successfully',
+            data: {
+                notificationId: `NOTIFY_${Date.now()}`,
+                status: 'sent',
+                estimatedResponseTime: '2-4 hours',
+                notificationData: notificationData
+            }
+        });
+
+    } catch (error) {
+        console.error('Error in /notify-staff:', error.message);
+        res.status(500).json({
+            error: 'Internal server error',
+            message: error.message
+        });
+    }
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
     console.error('Unhandled error:', err);
